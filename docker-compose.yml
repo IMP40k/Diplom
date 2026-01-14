@@ -1,0 +1,38 @@
+services:
+  backend:
+    build: .
+    container_name: mysite-web   # можно оставить прежнее имя контейнера
+    expose:
+      - "80"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - db
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=root
+      - MYSQL_DATABASE=users_db
+
+  waf:
+    build: ./waf
+    container_name: mysite-waf
+    ports:
+      - "8080:8080"
+    depends_on:
+      - backend
+
+  db:
+    image: mysql:8.0
+    container_name: mysite-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: users_db
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d
+
+volumes:
+  db_data:
+
